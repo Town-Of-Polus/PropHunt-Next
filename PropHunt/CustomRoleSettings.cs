@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AmongUs.GameOptions;
+using HarmonyLib;
 using UnityEngine;
 
 namespace PropHunt
@@ -23,7 +24,7 @@ namespace PropHunt
             if (toggleOption == null && numberOption == null)
             {
                 textObject = GameObject.Instantiate(GameObject.Find("Role Name").gameObject);
-                textObject.GetComponent<TMPro.TextMeshPro>().text = "Prop Hunt";
+                textObject.GetComponent<TMPro.TextMeshPro>().text = GetString(StringKey.PropHunt);
                 toggleOption = GameObject.Instantiate(__instance.AdvancedRolesSettings.GetComponentInChildren<ToggleOption>().gameObject);
                 numberOption = GameObject.Instantiate(__instance.AdvancedRolesSettings.GetComponentInChildren<NumberOption>().gameObject);
                 textObject.SetActive(false);
@@ -47,7 +48,7 @@ namespace PropHunt
             hidingOption.SuffixType = NumberSuffixes.Seconds;
             hidingOption.Value = PropHuntPlugin.hidingTime;
             hidingOption.transform.position = new Vector3(hidingOption.transform.position.x, hidingOption.transform.position.y - 0.5f, hidingOption.transform.position.z);
-            hidingOption.TitleText.text = "Hiding Time";
+            hidingOption.TitleText.text = GetString(StringKey.HidingTime);
             // Max Miss Option
             maxMissOption = GameObject.Instantiate(numberOption, __instance.AdvancedRolesSettings.transform).GetComponent<NumberOption>();
             maxMissOption.gameObject.SetActive(true);
@@ -57,7 +58,7 @@ namespace PropHunt
             maxMissOption.SuffixType = NumberSuffixes.None;
             maxMissOption.Value = PropHuntPlugin.maxMissedKills;
             maxMissOption.transform.position = new Vector3(maxMissOption.transform.position.x, maxMissOption.transform.position.y, maxMissOption.transform.position.z);
-            maxMissOption.TitleText.text = "Maximum Missed Kills";
+            maxMissOption.TitleText.text = GetString(StringKey.MaxMisKill);
             // Infection Option
             infectionOption = GameObject.Instantiate(toggleOption, __instance.AdvancedRolesSettings.transform).GetComponent<ToggleOption>();
             infectionOption.gameObject.SetActive(true);
@@ -65,11 +66,11 @@ namespace PropHunt
             infectionOption.transform.position = new Vector3(infectionOption.transform.position.x, infectionOption.transform.position.y, infectionOption.transform.position.z);
             if ((PropHuntPlugin.infection && !infectionOption.GetBool()) || (!PropHuntPlugin.infection && infectionOption.GetBool()))
                 infectionOption.Toggle();
-            infectionOption.TitleText.text = "Infection Mode";
+            infectionOption.TitleText.text = GetString(StringKey.Infection);
         }
 
 
-        [HarmonyPatch(typeof(GameOptionsData), nameof(GameOptionsData.ToHudString))]
+        [HarmonyPatch(typeof(IGameOptionsExtensions), nameof(IGameOptionsExtensions.ToHudString))]
         [HarmonyPrefix]
         public static void SyncCustomSettings(GameOptionsData __instance)
         {

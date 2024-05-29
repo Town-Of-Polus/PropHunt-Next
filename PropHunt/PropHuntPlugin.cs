@@ -1,5 +1,6 @@
 ﻿// Core Script of PropHuntPlugin
 // Copyright (C) 2022  ugackMiner
+global using static PropHunt.Language;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Unity.IL2CPP;
@@ -9,11 +10,12 @@ using Reactor.Utilities;
 using Reactor.Networking.Rpc;
 using Reactor.Networking.Attributes;
 using UnityEngine;
+using System.Collections.Generic;
+using Il2CppSystem.Web.Util;
 
 namespace PropHunt;
 
-
-[BepInPlugin("com.ugackminer.amongus.prophunt", "Prop Hunt", "v2022.11.5")]
+[BepInPlugin("com.ugackminer.amongus.prophunt", "Prop Hunt", Version)]
 [BepInProcess("Among Us.exe")]
 [BepInDependency(ReactorPlugin.Id)]
 public partial class PropHuntPlugin : BasePlugin
@@ -23,7 +25,7 @@ public partial class PropHuntPlugin : BasePlugin
     public ConfigEntry<float> HidingTime { get; private set; }
     public ConfigEntry<int> MaxMissedKills { get; private set; }
     public ConfigEntry<bool> Infection { get; private set; }
-
+    public const string Version = "2024.5.29";
     // Gameplay Variables
     public static float hidingTime = 30f;
     public static int maxMissedKills = 3;
@@ -33,17 +35,29 @@ public partial class PropHuntPlugin : BasePlugin
 
     public static PropHuntPlugin Instance;
 
+    public static Dictionary<PlayerControl, ulong> PlayerVersion = new();
 
+    public static Sprite TeamLogo;
     public override void Load()
     {
         HidingTime = Config.Bind("Prop Hunt", "Hiding Time", 30f);
         MaxMissedKills = Config.Bind("Prop Hunt", "Max Misses", 3);
         Infection = Config.Bind("Prop Hunt", "Infection", true);
 
+        Instance = this;
         Instance = PluginSingleton<PropHuntPlugin>.Instance;
 
+        Harmony.PatchAll();
+        Harmony.PatchAll(typeof(PicturesLoad));
+        Harmony.PatchAll(typeof(PingTracker_Update));
+        Harmony.PatchAll(typeof(Language));
         Harmony.PatchAll(typeof(Patches));
         Harmony.PatchAll(typeof(CustomRoleSettings));
+    }
+    public static Sprite GetTeamLogo()
+    {
+        if (TeamLogo) return TeamLogo;
+        return TeamLogo = PicturesLoad.loadSpriteFromResources("PropHunt.Resources.TeamLogo.png", 150f);
     }
 
     public enum RPC

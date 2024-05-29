@@ -5,11 +5,103 @@ using Reactor;
 using UnityEngine;
 using AmongUs.Data;
 using Reactor.Utilities;
+using AmongUs.GameOptions;
+using Il2CppSystem.Web.Util;
+using TMPro;
+using UnityEngine.Purchasing;
+using System;
+using Rewired.Utils.Platforms.Windows;
 
 namespace PropHunt
 {
     public class Patches
     {
+        [HarmonyPatch(typeof(MainMenuManager), nameof(MainMenuManager.Start))]
+        public static class MainMenuLogo
+        {
+            public static SpriteRenderer renderer;
+            public static Sprite bannerSprite;
+            private static PingTracker instance;
+
+            public static GameObject motdObject;
+            public static TextMeshPro motdText;
+
+            static void Postfix(PingTracker __instance)
+            {
+                var torLogo = new GameObject("bannerLogo_PH");
+                torLogo.transform.SetParent(GameObject.Find("RightPanel").transform, false);
+                torLogo.transform.localPosition = new Vector3(-0.4f, 1f, 5f);
+
+                renderer = torLogo.AddComponent<SpriteRenderer>();
+                loadSprites();
+                renderer.sprite = PicturesLoad.loadSpriteFromResources("PropHunt.Resources.PropHuntLogo.png", 300f);
+
+                instance = __instance;
+                loadSprites();
+                var credentialObject = new GameObject("credentialsTOR");
+                var credentials = credentialObject.AddComponent<TextMeshPro>();
+                credentials.SetText($"<size=120%><color=#ff6600>Prop Hunt</color> v{PropHuntPlugin.Version}\nBy ugackMiner53 & <color=#00ffff>fangkuai</color>");
+                credentials.alignment = TMPro.TextAlignmentOptions.Center;
+                credentials.fontSize *= 0.05f;
+
+                credentials.transform.SetParent(torLogo.transform);
+                credentials.transform.localPosition = Vector3.down * 1.25f;
+                motdObject = new GameObject("torMOTD");
+                motdText = motdObject.AddComponent<TextMeshPro>();
+                motdText.alignment = TMPro.TextAlignmentOptions.Center;
+                motdText.fontSize *= 0.04f;
+
+                motdText.transform.SetParent(torLogo.transform);
+                motdText.enableWordWrapping = true;
+                var rect = motdText.gameObject.GetComponent<RectTransform>();
+                rect.sizeDelta = new Vector2(5.2f, 0.25f);
+
+                motdText.transform.localPosition = Vector3.down * 2.25f;
+                motdText.color = new Color(1, 53f / 255, 31f / 255);
+                Material mat = motdText.fontSharedMaterial;
+                mat.shaderKeywords = new string[] { "OUTLINE_ON" };
+                motdText.SetOutlineColor(Color.white);
+                motdText.SetOutlineThickness(0.025f);
+            }
+
+            public static void loadSprites()
+            {
+                if (bannerSprite == null) bannerSprite = PicturesLoad.loadSpriteFromResources("PropHunt.Resources.PropHuntLogo.png", 300f);
+            }
+
+            public static void updateSprite()
+            {
+                loadSprites();
+                if (renderer != null)
+                {
+                    float fadeDuration = 1f;
+                    instance.StartCoroutine(Effects.Lerp(fadeDuration, new Action<float>((p) =>
+                    {
+                        renderer.color = new Color(1, 1, 1, 1 - p);
+                        if (p == 1)
+                        {
+                            instance.StartCoroutine(Effects.Lerp(fadeDuration, new Action<float>((p) =>
+                            {
+                                renderer.color = new Color(1, 1, 1, p);
+                            })));
+                        }
+                    })));
+                }
+            }
+        }
+        [HarmonyPatch(typeof(PlayerPhysics), nameof(PlayerPhysics.CoSpawnPlayer))]
+        public static class LobbyChat
+        {
+            public static void Postfix(PlayerPhysics __instance)
+            {
+
+                if (__instance.myPlayer == PlayerControl.LocalPlayer)
+                {
+                    ChatController chat = HudManager.Instance.Chat;
+                    chat.AddChat(PlayerControl.LocalPlayer, GetString(StringKey.HelloWrods));
+                }
+            }
+        }
         // Main input loop for custom keys
         [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
         [HarmonyPostfix]
@@ -51,10 +143,10 @@ namespace PropHunt
         {
             __instance.gameObject.AddComponent<SpriteRenderer>();
             __instance.GetComponent<CircleCollider2D>().radius = 0.00001f;
-            if (AmongUsClient.Instance.GameMode != GameModes.FreePlay)
-            {
-                GameObject.FindObjectOfType<PingTracker>().enabled = false;
-            }
+            //if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay)
+            //{
+                //GameObject.FindObjectOfType<PingTracker>().enabled = false;
+            //}
         }
 
 
@@ -101,7 +193,7 @@ namespace PropHunt
         }
 
         // Make it so that seekers only win if they got ALL the props
-        [HarmonyPatch(typeof(ShipStatus), nameof(ShipStatus.CheckEndCriteria))]
+        [HarmonyPatch(typeof(LogicGameFlowNormal), nameof(LogicGameFlowNormal.CheckEndCriteria))]
         [HarmonyPrefix]
         public static bool CheckEndPatch(ShipStatus __instance)
         {
@@ -139,10 +231,10 @@ namespace PropHunt
                 if (DestroyableSingleton<TutorialManager>.InstanceExists)
                 {
                     DestroyableSingleton<HudManager>.Instance.ShowPopUp(DestroyableSingleton<TranslationController>.Instance.GetString(StringNames.GameOverImpostorKills, System.Array.Empty<Il2CppSystem.Object>()));
-                    ShipStatus.ReviveEveryone();
+                    GameManager.Instance.ReviveEveryoneFreeplay();
                     return false;
                 }
-                if (PlayerControl.GameOptions.gameType == GameType.Normal)
+                if (GameOptionsManager.Instance.currentNormalGameOptions.GameMode == GameModes.Normal)
                 {
                     GameOverReason endReason;
                     switch (TempData.LastDeathReason)
@@ -157,16 +249,16 @@ namespace PropHunt
                             endReason = GameOverReason.ImpostorByVote;
                             break;
                     }
-                    ShipStatus.RpcEndGame(endReason, !DataManager.Player.Ads.HasPurchasedAdRemoval);
+                    GameManager.Instance.RpcEndGame(endReason, !DataManager.Player.Ads.HasPurchasedAdRemoval);
                     return false;
                 }
             }
             else if (!DestroyableSingleton<TutorialManager>.InstanceExists)
             {
-                if (PlayerControl.GameOptions.gameType == GameType.Normal && GameData.Instance.TotalTasks <= GameData.Instance.CompletedTasks)
+                if (GameOptionsManager.Instance.currentNormalGameOptions.GameMode == GameModes.Normal && GameData.Instance.TotalTasks <= GameData.Instance.CompletedTasks)
                 {
                     __instance.enabled = false;
-                    ShipStatus.RpcEndGame(GameOverReason.HumansByTask, !DataManager.Player.Ads.HasPurchasedAdRemoval);
+                    GameManager.Instance.RpcEndGame(GameOverReason.HumansByTask, !DataManager.Player.Ads.HasPurchasedAdRemoval);
                     return false;
                 }
             }
@@ -189,7 +281,7 @@ namespace PropHunt
             }
             if (aliveImpostors <= 0)
             {
-                ShipStatus.RpcEndGame(GameOverReason.HumansByVote, !DataManager.Player.Ads.HasPurchasedAdRemoval);
+                GameManager.Instance.RpcEndGame(GameOverReason.HumansByVote, !DataManager.Player.Ads.HasPurchasedAdRemoval);
                 return false;
             }
             return false;
@@ -213,32 +305,34 @@ namespace PropHunt
             if (__instance.currentTarget == null && !__instance.isCoolingDown && !PlayerControl.LocalPlayer.Data.IsDead && !PlayerControl.LocalPlayer.inVent)
             {
                 PropHuntPlugin.missedKills++;
-                if (AmongUsClient.Instance.GameMode != GameModes.FreePlay)
+                /*if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay)
                 {
                     TMPro.TextMeshPro pingText = GameObject.FindObjectOfType<PingTracker>().text;
                     pingText.text = string.Format("Remaining Attempts: {0}", PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills);
                     pingText.color = Color.red;
-                }
+                }*/
                 if (PropHuntPlugin.missedKills >= PropHuntPlugin.maxMissedKills)
                 {
                     PlayerControl.LocalPlayer.CmdCheckMurder(PlayerControl.LocalPlayer);
                     PropHuntPlugin.missedKills = 0;
                 }
-                Coroutines.Start(PropHuntPlugin.Utility.KillConsoleAnimation());
-                GameObject closestProp = PropHuntPlugin.Utility.FindClosestConsole(PlayerControl.LocalPlayer.gameObject, GameOptionsData.KillDistances[Mathf.Clamp(PlayerControl.GameOptions.KillDistance, 0, 2)]);
+                    Coroutines.Start(PropHuntPlugin.Utility.KillConsoleAnimation());
+                GameObject closestProp = PropHuntPlugin.Utility.FindClosestConsole(PlayerControl.LocalPlayer.gameObject, GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)]);
                 if (closestProp != null)
                 {
                     GameObject.Destroy(closestProp.gameObject);
                 }
+                //__instance.buttonLabelText.gameObject.SetActive(true);
+                //__instance.buttonLabelText.text = string.Format("Remaining Attempts: {0}", PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills);
             }
         }
 
         // Make the game start with AT LEAST one impostor (happens if there are >4 players)
-        [HarmonyPatch(typeof(GameOptionsData), nameof(GameOptionsData.GetAdjustedNumImpostors))]
+        [HarmonyPatch(typeof(IGameOptionsExtensions), nameof(IGameOptionsExtensions.GetAdjustedNumImpostors))]
         [HarmonyPrefix]
         public static bool ForceNotZeroImps(GameOptionsData __instance, ref int __result)
         {
-            int numImpostors = PlayerControl.GameOptions.NumImpostors;
+            int numImpostors = GameOptionsManager.Instance.currentNormalGameOptions.NumImpostors;
             int num = 3;
             if (GameData.Instance.PlayerCount < GameOptionsData.MaxImpostors.Length)
             {
@@ -304,30 +398,30 @@ namespace PropHunt
         }
 
         // Change the role text
-        [HarmonyPatch(typeof(IntroCutscene._ShowRole_d__24), nameof(IntroCutscene._ShowRole_d__24.MoveNext))]
+        [HarmonyPatch(typeof(IntroCutscene._ShowRole_d__41), nameof(IntroCutscene._ShowRole_d__41.MoveNext))]
         [HarmonyPostfix]
-        public static void IntroCutsceneRolePatch(IntroCutscene._ShowRole_d__24 __instance)
+        public static void IntroCutsceneRolePatch(IntroCutscene._ShowRole_d__41 __instance)
         {
             // IEnumerator hooking (help from @Daemon#6489 in the reactor discord)
             if (__instance.__1__state == 1)
             {
                 if (PlayerControl.LocalPlayer.Data.Role.IsImpostor)
                 {
-                    __instance.__4__this.RoleText.text = "Seeker";
-                    __instance.__4__this.RoleBlurbText.text = "Find and kill the props\nYour game will be unfrozen after " + PropHuntPlugin.hidingTime + " seconds";
+                    __instance.__4__this.RoleText.text = GetString(StringKey.Seeker);
+                    __instance.__4__this.RoleBlurbText.text = string.Format(GetString(StringKey.SeekerDescription), PropHuntPlugin.hidingTime);
                 }
                 else
                 {
-                    __instance.__4__this.RoleText.text = "Prop";
-                    __instance.__4__this.RoleBlurbText.text = "Turn into props to hide from the seekers";
+                    __instance.__4__this.RoleText.text = GetString(StringKey.Prop);
+                    __instance.__4__this.RoleBlurbText.text = GetString(StringKey.PropDescription);
                 }
             }
         }
 
         // Extend the intro cutscene for impostors
-        [HarmonyPatch(typeof(IntroCutscene._CoBegin_d__19), nameof(IntroCutscene._CoBegin_d__19.MoveNext))]
+        [HarmonyPatch(typeof(IntroCutscene._CoBegin_d__35), nameof(IntroCutscene._CoBegin_d__35.MoveNext))]
         [HarmonyPrefix]
-        public static bool IntroCutsceneCoBeginPatch(IntroCutscene._CoBegin_d__19 __instance)
+        public static bool IntroCutsceneCoBeginPatch(IntroCutscene._CoBegin_d__35 __instance)
         {
             if (__instance.__1__state != 2 || !PlayerControl.LocalPlayer.Data.Role.IsImpostor)
             {
