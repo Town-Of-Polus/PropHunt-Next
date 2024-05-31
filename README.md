@@ -4,7 +4,7 @@
 
 ```Compatible with 2024.3.5s ```
 # Prop Hunt
-
+### Town-Of-Polus Team
 A mod for [Among Us](https://store.steampowered.com/app/945360/Among_Us/) which adds a completely new gamemode, Prop Hunt!
 
 # Translate
