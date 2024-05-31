@@ -8,7 +8,7 @@
 A mod for [Among Us](https://store.steampowered.com/app/945360/Among_Us/) which adds a completely new gamemode, Prop Hunt!
 
 # Translate
-You can add translations by modifying PropHunt \ Language.cs and requesting them to be pulled
+You can add translations by modifying ```PropHunt\Language.cs``` and requesting them to be pulled
 
 ## How To Play
 Prop Hunt replaces the default roles in the game with two new roles, the **Seekers** and the **Props**.
