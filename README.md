@@ -21,7 +21,7 @@ Prop Hunt replaces the default roles in the game with two new roles, the **Seeke
 | Key(按键) | Effect(功能) |
 |-----|--------|
 | `R` | Clone nearest task (变形) |
-| `Shift(Right右)` | Noclip through walls (穿墙) |
+| `Shift(Left左)` | Noclip through walls (穿墙) |
 
 *Note: Noclip is a temporary solution for getting stuck, not for hiding!*
 
