@@ -2,11 +2,13 @@
 
 ![Prop Hunt Logo](./Images/prophuntlogo.png)
 
-```Compatible with 2022.10.25s ```
+```Compatible with 2024.3.5s ```
 # Prop Hunt
 
 A mod for [Among Us](https://store.steampowered.com/app/945360/Among_Us/) which adds a completely new gamemode, Prop Hunt!
 
+# Translate
+You can add translations by modifying PropHunt \ Language.cs and requesting them to be pulled
 
 ## How To Play
 Prop Hunt replaces the default roles in the game with two new roles, the **Seekers** and the **Props**.
@@ -16,10 +18,10 @@ Prop Hunt replaces the default roles in the game with two new roles, the **Seeke
 **Seekers**: The goal of the seekers is to find and kill all props. At the beginning of the game, the Seekers are locked in place while the Props hide. When they are released, the Seekers get a limited number of attempts to kill people, and if they exceed it, they die.
 
 ## Controls
-| Key | Effect |
+| Key(按键) | Effect(功能) |
 |-----|--------|
-| `R` | Clone nearest task |
-| `Shift` | Noclip through walls |
+| `R` | Clone nearest task (变形) |
+| `Shift(Right右)` | Noclip through walls (穿墙) |
 
 *Note: Noclip is a temporary solution for getting stuck, not for hiding!*
 
