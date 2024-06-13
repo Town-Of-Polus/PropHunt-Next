@@ -132,7 +132,7 @@ public static void PlayerInputControlPatch(KeyboardJoystick __instance)
         }
     }
 
-    if (Input.GetKey(KeyCode.F1) && !player.Data.Role.IsImpostor && NewGameSettingsTabPatch.EnableInvisible && !NewGameSettingsTabPatch.EnableSpeed)
+    if (Input.GetKeyDown(KeyCode.F1) && !player.Data.Role.IsImpostor && NewGameSettingsTabPatch.EnableInvisible)
     {
         player.SetVisible(false, null);
         player.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Alpha", 1f);

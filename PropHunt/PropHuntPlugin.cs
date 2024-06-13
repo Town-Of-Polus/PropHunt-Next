@@ -29,7 +29,7 @@ public partial class PropHuntPlugin : BasePlugin
     public ConfigEntry<bool> Infection { get; private set; }
     public ConfigEntry<bool> EnableInvisible {get; private set;}
      public ConfigEntry<bool> EnableSpeed {get; private set;}
-    public const string Version = "2024.5.29";
+    public const string Version = "2024.6.13";
     // Gameplay Variables
     public static float hidingTime = 30f;
     public static int maxMissedKills = 3;
