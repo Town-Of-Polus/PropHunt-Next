@@ -11,13 +11,15 @@ using Reactor.Networking.Rpc;
 using Reactor.Networking.Attributes;
 using UnityEngine;
 using System.Collections.Generic;
-using Il2CppSystem.Web.Util;
+using AmongUsSpecimen;
 
 namespace PropHunt;
 
 [BepInPlugin("com.ugackminer.amongus.prophunt", "Prop Hunt", Version)]
 [BepInProcess("Among Us.exe")]
 [BepInDependency(ReactorPlugin.Id)]
+[BepInDependency(Specimen.Guid)]
+[CustomRegion("PropHunt AU Server(MEU)", "au-eu.duikbo.at", "https://au-eu.duikbo.at", color: "#ff0000")]
 public partial class PropHuntPlugin : BasePlugin
 {
     // Backend Variables
@@ -25,6 +27,8 @@ public partial class PropHuntPlugin : BasePlugin
     public ConfigEntry<float> HidingTime { get; private set; }
     public ConfigEntry<int> MaxMissedKills { get; private set; }
     public ConfigEntry<bool> Infection { get; private set; }
+    public ConfigEntry<bool> EnableInvisible {get; private set;}
+     public ConfigEntry<bool> EnableSpeed {get; private set;}
     public const string Version = "2024.5.29";
     // Gameplay Variables
     public static float hidingTime = 30f;
@@ -43,11 +47,14 @@ public partial class PropHuntPlugin : BasePlugin
         HidingTime = Config.Bind("Prop Hunt", "Hiding Time", 30f);
         MaxMissedKills = Config.Bind("Prop Hunt", "Max Misses", 3);
         Infection = Config.Bind("Prop Hunt", "Infection", true);
+         EnableInvisible = Config.Bind("Prop Hunt", "Should The Player Be Invisible instead of disgusing", false);
+         EnableInvisible = Config.Bind("Prop Hunt", "Should The Player Speed Get 2X instead of disgusing (cool with invisible)", false);
 
         Instance = this;
         Instance = PluginSingleton<PropHuntPlugin>.Instance;
 
         Harmony.PatchAll();
+        Harmony.PatchAll(typeof(NewGameSettingsTabPatch));
         Harmony.PatchAll(typeof(PicturesLoad));
         Harmony.PatchAll(typeof(PingTracker_Update));
         Harmony.PatchAll(typeof(Language));
@@ -69,28 +76,30 @@ public partial class PropHuntPlugin : BasePlugin
     public static class RPCHandler
     {
         // static MethodRpc rpc = new MethodRpc(PropHuntPlugin.Instance, Type.GetMethod("RPCPropSync"), RPC.PropSync, Hazel.SendOption.Reliable, RpcLocalHandling.None, true);
-        [MethodRpc((uint)RPC.PropSync)]
-        public static void RPCPropSync(PlayerControl player, string propIndex)
+        [Rpc]
+        public static void RPCPropSync(PlayerControl __sender, string propIndex)
         {
             GameObject prop = ShipStatus.Instance.AllConsoles[int.Parse(propIndex)].gameObject;
-            Logger<PropHuntPlugin>.Info($"{player.Data.PlayerName} changed their sprite to: {prop.name}");
-            player.GetComponent<SpriteRenderer>().sprite = prop.GetComponent<SpriteRenderer>().sprite;
-            player.transform.localScale = prop.transform.lossyScale;
-            player.Visible = false;
+            Logger<PropHuntPlugin>.Info($"{__sender.Data.PlayerName} changed their sprite to: {prop.name}");
+            __sender.GetComponent<SpriteRenderer>().sprite = prop.GetComponent<SpriteRenderer>().sprite;
+            __sender.transform.localScale = prop.transform.lossyScale;
+            __sender.Visible = false;
         }
 
-        [MethodRpc((uint)RPC.SettingSync)]
-        public static void RPCSettingSync(PlayerControl player, float _hidingTime, int _missedKills, bool _infection)
+        [Rpc]
+        public static void RPCSettingSync(PlayerControl __sender, float _hidingTime, int _missedKills, bool _infection, bool HaveInvisibleAbility, bool HaveSpeedAbility)
         {
             hidingTime = _hidingTime;
             maxMissedKills = _missedKills;
             infection = _infection;
             Logger<PropHuntPlugin>.Info("H: " + PropHuntPlugin.hidingTime + ", M: " + PropHuntPlugin.maxMissedKills + ", I: " + PropHuntPlugin.infection);
-            if (player == PlayerControl.LocalPlayer && (hidingTime != Instance.HidingTime.Value || maxMissedKills != Instance.MaxMissedKills.Value || infection != Instance.Infection.Value))
+            if (__sender == PlayerControl.LocalPlayer && (hidingTime != Instance.HidingTime.Value || maxMissedKills != Instance.MaxMissedKills.Value || infection != Instance.Infection.Value || HaveInvisibleAbility != Instance.EnableInvisible.Value || HaveSpeedAbility != Instance.EnableSpeed.Value))
             {
                 Instance.HidingTime.Value = hidingTime;
                 Instance.MaxMissedKills.Value = maxMissedKills;
                 Instance.Infection.Value = infection;
+                Instance.EnableInvisible.Value = NewGameSettingsTabPatch.EnableInvisible;
+                Instance.EnableSpeed.Value = NewGameSettingsTabPatch.EnableSpeed;
                 Instance.Config.Save();
             }
         }

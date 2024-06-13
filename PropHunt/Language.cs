@@ -24,7 +24,7 @@ namespace PropHunt
     {
         public static Dictionary<StringKey, string> langDic = new();
 
-        [HarmonyPatch(typeof(TranslationController),nameof(TranslationController.Initialize))]
+        [HarmonyPatch(typeof(TranslationController), nameof(TranslationController.Initialize))]
         [HarmonyPostfix]
         public static void Init(TranslationController __instance)
         {
@@ -47,7 +47,7 @@ namespace PropHunt
             }
             catch
             {
-                result = "<Error loading:" + key.ToString() +">";
+                result = "<Error loading:" + key.ToString() + ">";
             }
             return result;
         }
@@ -93,6 +93,25 @@ namespace PropHunt
                         [StringKey.False] = "关闭",
                         [StringKey.HostSetting] = "\n\n房主设置:\n躲藏时间: {0}\n最大错误击杀次数: {1}\n躲藏者死后变为内鬼: {2}\n"
                     };
+
+                case SupportedLangs.French:
+                    return new()
+                    {
+                        [StringKey.PropHunt] = "Cache-cache avec des objets",
+                        [StringKey.HidingTime] = "Temps de cachette",
+                        [StringKey.MaxMisKill] = "Nombre maximum d'erreurs de tuerie",
+                        [StringKey.Infection] = "Les cacheurs deviennent des imposteurs après leur mort",
+                        [StringKey.Seeker] = "Chercheur",
+                        [StringKey.SeekerDescription] = "Trouvez les cacheurs\nVous pouvez bouger après {0} secondes",
+                        [StringKey.Prop] = "Cacheur",
+                        [StringKey.PropDescription] = "Devenez un objet et trompez les chercheurs",
+                        [StringKey.HelloWrods] = "Bienvenue dans <color=#ff6700FF>Cache-cache avec des objets</color> v2024.5.29!\n\nCréé par <color=#ff00ff>ugackMiner53</color> & <color=#00ffff>fangkuai</color>\nVous pouvez utiliser la touche “<b>R</b>” pour vous transformer en un objet proche\nVous pouvez aussi utiliser la touche “<b>SHIFT</b>” pour traverser les murs (non recommandé)\n(Si vous rencontrez des bugs, rejoignez le groupe 805390622 pour les signaler, sinon taisez-vous)",
+                        [StringKey.PingMsText] = "Latence : {0} millisecondes",
+                        [StringKey.RemainingAttempts] = "<color=#FF0000>Nombre d'erreurs de tuerie restantes : {0}</color>\nLatence : {1} millisecondes\n",
+                        [StringKey.True] = "Activé",
+                        [StringKey.False] = "Désactivé",
+                        [StringKey.HostSetting] = "\n\nParamètres de l'hôte:\nTemps de cachette : {0}\nNombre maximum d'erreurs de tuerie : {1}\nLes cacheurs deviennent des imposteurs après leur mort : {2}\n"
+                };
             }
         }
     }

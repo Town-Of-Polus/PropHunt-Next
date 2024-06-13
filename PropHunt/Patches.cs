@@ -103,38 +103,60 @@ namespace PropHunt
             }
         }
         // Main input loop for custom keys
-        [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
-        [HarmonyPostfix]
-        public static void PlayerInputControlPatch(KeyboardJoystick __instance)
+[HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
+[HarmonyPostfix]
+public static void PlayerInputControlPatch(KeyboardJoystick __instance)
+{
+    PlayerControl player = PlayerControl.LocalPlayer;
+    
+    // Adding the check for EnableInvisible and EnableSpeed
+    if (Input.GetKeyDown(KeyCode.R) && 
+        !player.Data.Role.IsImpostor && 
+        !NewGameSettingsTabPatch.EnableInvisible && 
+        !(NewGameSettingsTabPatch.EnableInvisible && NewGameSettingsTabPatch.EnableSpeed))
+    {
+        Logger<PropHuntPlugin>.Info("Key pressed");
+        GameObject closestConsole = PropHuntPlugin.Utility.FindClosestConsole(player.gameObject, 3);
+        if (closestConsole != null)
         {
-            PlayerControl player = PlayerControl.LocalPlayer;
-            if (Input.GetKeyDown(KeyCode.R) && !player.Data.Role.IsImpostor)
+            player.transform.localScale = closestConsole.transform.lossyScale;
+            player.GetComponent<SpriteRenderer>().sprite = closestConsole.GetComponent<SpriteRenderer>().sprite;
+            for (int i = 0; i < ShipStatus.Instance.AllConsoles.Length; i++)
             {
-                Logger<PropHuntPlugin>.Info("Key pressed");
-                GameObject closestConsole = PropHuntPlugin.Utility.FindClosestConsole(player.gameObject, 3);
-                if (closestConsole != null)
+                if (ShipStatus.Instance.AllConsoles[i] == closestConsole.GetComponent<Console>())
                 {
-                    player.transform.localScale = closestConsole.transform.lossyScale;
-                    player.GetComponent<SpriteRenderer>().sprite = closestConsole.GetComponent<SpriteRenderer>().sprite;
-                    for (int i = 0; i < ShipStatus.Instance.AllConsoles.Length; i++)
-                    {
-                        if (ShipStatus.Instance.AllConsoles[i] == closestConsole.GetComponent<Console>())
-                        {
-                            Logger<PropHuntPlugin>.Info("Task of index " + i + " being sent out");
-                            PropHuntPlugin.RPCHandler.RPCPropSync(PlayerControl.LocalPlayer, i + "");
-                        }
-                    }
+                    Logger<PropHuntPlugin>.Info("Task of index " + i + " being sent out");
+                    PropHuntPlugin.RPCHandler.RPCPropSync(PlayerControl.LocalPlayer, i + "");
                 }
             }
-            if (Input.GetKeyDown(KeyCode.LeftShift))
-            {
-                player.Collider.enabled = false;
-            }
-            else if (Input.GetKeyUp(KeyCode.LeftShift))
-            {
-                player.Collider.enabled = true;
-            }
         }
+    }
+
+    if (Input.GetKey(KeyCode.F1) && !player.Data.Role.IsImpostor && NewGameSettingsTabPatch.EnableInvisible && !NewGameSettingsTabPatch.EnableSpeed)
+    {
+        player.SetVisible(false, null);
+        player.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Alpha", 1f);
+        if (NewGameSettingsTabPatch.EnableSpeed)
+        {
+            player.MyPhysics.SetSpeedModifier(20f, null);
+        }
+        else if (NewGameSettingsTabPatch.EnableInvisible && NewGameSettingsTabPatch.EnableSpeed && !player.Data.Role.IsImpostor)
+        {
+            player.SetVisible(false, null);
+            player.MyPhysics.SetSpeedModifier(20f, null);
+        }
+    }
+
+    if (Input.GetKeyDown(KeyCode.LeftShift))
+    {
+        player.Collider.enabled = false;
+    }
+    else if (Input.GetKeyUp(KeyCode.LeftShift))
+    {
+        player.Collider.enabled = true;
+    }
+}
+
 
         // Runs when the player is created
         [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Start))]
@@ -430,7 +452,5 @@ namespace PropHunt
             Coroutines.Start(PropHuntPlugin.Utility.IntroCutsceneHidePatch(__instance.__4__this));
             return false;
         }
-
-
     }
 }
