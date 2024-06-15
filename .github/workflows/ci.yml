@@ -32,6 +32,3 @@ jobs:
         with:
           name: PropHunt.dll
           path: PropHunt/bin/Release/net6.0/PropHunt.dll
-        with:
-          name: AmongUsSpeciment.dll
-          path: PropHunt/bin/Release/net6.0/AmongUsSpecimen.dll
