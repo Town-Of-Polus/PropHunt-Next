@@ -349,6 +349,15 @@ public static void PlayerInputControlPatch(KeyboardJoystick __instance)
             }
         }
 
+        public static PlayerControl GetRandomLivingPlayer()
+        {
+            var livingPlayers = PlayerControl.AllPlayerControls.ToArray().Where(p => !p.Data.IsDead).ToList();
+            if (livingPlayers.Count == 0) return null;
+            Random random = new Random();
+            int index = random.Next(livingPlayers.Count);
+            return livingPlayers[index];
+        }
+
         // Make the game start with AT LEAST one impostor (happens if there are >4 players)
         [HarmonyPatch(typeof(IGameOptionsExtensions), nameof(IGameOptionsExtensions.GetAdjustedNumImpostors))]
         [HarmonyPrefix]
@@ -388,6 +397,16 @@ public static void PlayerInputControlPatch(KeyboardJoystick __instance)
         public static bool DisableFunctions()
         {
             return false;
+        }
+
+        // Test Mind Controll
+        [HarmonyPatch(typeof(KillButton), nameof(KillButton.DoClick))]
+        public static void Postfix(KillButton __instance)
+        {
+            if (PlayerControl.LocalPlayer.Data.Role.IsImpostor)
+            {
+                MindControlAbility.ControlPlayer(PlayerControl.LocalPlayer, GetRandomLivingPlayer());
+            }
         }
 
         [HarmonyPatch(typeof(ShadowCollab), nameof(ShadowCollab.OnEnable))]
