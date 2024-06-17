@@ -10,6 +10,7 @@ using Il2CppSystem.Web.Util;
 using TMPro;
 using UnityEngine.Purchasing;
 using System;
+using System.Linq;
 using Rewired.Utils.Platforms.Windows;
 
 namespace PropHunt
@@ -353,8 +354,8 @@ public static void PlayerInputControlPatch(KeyboardJoystick __instance)
         {
             var livingPlayers = PlayerControl.AllPlayerControls.ToArray().Where(p => !p.Data.IsDead).ToList();
             if (livingPlayers.Count == 0) return null;
-            Random random = new Random();
-            int index = random.Next(livingPlayers.Count);
+            System.Random random = new System.Random();
+            int index = random.Next(0, livingPlayers.Count);
             return livingPlayers[index];
         }
 
