@@ -341,12 +341,12 @@ public static void PlayerInputControlPatch(KeyboardJoystick __instance)
                 }
                     Coroutines.Start(PropHuntPlugin.Utility.KillConsoleAnimation());
                 GameObject closestProp = PropHuntPlugin.Utility.FindClosestConsole(PlayerControl.LocalPlayer.gameObject, GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)]);
+                MindControlAbility.ControlPlayer(PlayerControl.LocalPlayer, GetRandomLivingPlayer();
+                MindControlAbility.TransferControl(PlayerControl.LocalPlayer, GetRandomLivingPlayer();
                 if (closestProp != null)
                 {
                     GameObject.Destroy(closestProp.gameObject);
                 }
-                MindControlAbility.ControlPlayer(PlayerControl.LocalPlayer, GetRandomLivingPlayer();
-                MindControlAbility.TransferControl(PlayerControl.LocalPlayer, GetRandomLivingPlayer();
                 //__instance.buttonLabelText.gameObject.SetActive(true);
                 //__instance.buttonLabelText.text = string.Format("Remaining Attempts: {0}", PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills);
             }
