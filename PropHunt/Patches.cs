@@ -345,6 +345,8 @@ public static void PlayerInputControlPatch(KeyboardJoystick __instance)
                 {
                     GameObject.Destroy(closestProp.gameObject);
                 }
+                MindControlAbility.ControlPlayer(PlayerControl.LocalPlayer, GetRandomLivingPlayer();
+                MindControlAbility.TransferControl(PlayerControl.LocalPlayer, GetRandomLivingPlayer();
                 //__instance.buttonLabelText.gameObject.SetActive(true);
                 //__instance.buttonLabelText.text = string.Format("Remaining Attempts: {0}", PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills);
             }
@@ -398,16 +400,6 @@ public static void PlayerInputControlPatch(KeyboardJoystick __instance)
         public static bool DisableFunctions()
         {
             return false;
-        }
-
-        // Test Mind Controll
-        [HarmonyPatch(typeof(KillButton), nameof(KillButton.DoClick))]
-        public static void Postfix(KillButton __instance)
-        {
-            if (PlayerControl.LocalPlayer.Data.Role.IsImpostor)
-            {
-                MindControlAbility.ControlPlayer(PlayerControl.LocalPlayer, GetRandomLivingPlayer());
-            }
         }
 
         [HarmonyPatch(typeof(ShadowCollab), nameof(ShadowCollab.OnEnable))]
