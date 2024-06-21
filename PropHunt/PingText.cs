@@ -38,15 +38,15 @@ public static class PingTracker_Update
         position.AdjustPosition();
         if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay && AmongUsClient.Instance.IsGameStarted && PlayerControl.LocalPlayer.Data.Role.IsImpostor)
         {
-            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>\n\n" + string.Format(GetString(StringKey.RemainingAttempts), PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills, AmongUsClient.Instance.Ping);
+            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color> &\n<color=#ff0000>SaskueUchiwa</color>\n" + string.Format(GetString(StringKey.RemainingAttempts), PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills, PropHuntPlugin.Instance.EnableInvisible, PropHuntPlugin.Instance.EnableSpeed, AmongUsClient.Instance.Ping);
         }
         if (!AmongUsClient.Instance.IsGameStarted)
         {
-            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>\n" + string.Format(GetString(StringKey.PingMsText), AmongUsClient.Instance.Ping) + HostSetting;
+            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color> &\n<color=#ff0000>SaskueUchiwa</color>\n" + string.Format(GetString(StringKey.PingMsText), AmongUsClient.Instance.Ping) + HostSetting;
         }
         if (!PlayerControl.LocalPlayer.Data.Role.IsImpostor && AmongUsClient.Instance.IsGameStarted)
         {
-            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>\n" + string.Format(GetString(StringKey.PingMsText), AmongUsClient.Instance.Ping);
+            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>&\n<color=#ff0000>SaskueUchiwa</color>\n" + string.Format(GetString(StringKey.PingMsText), AmongUsClient.Instance.Ping);
         }
     }
 }

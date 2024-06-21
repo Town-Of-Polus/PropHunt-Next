@@ -10,6 +10,7 @@ using Il2CppSystem.Web.Util;
 using TMPro;
 using UnityEngine.Purchasing;
 using System;
+using System.Linq;
 using Rewired.Utils.Platforms.Windows;
 
 namespace PropHunt
@@ -103,38 +104,60 @@ namespace PropHunt
             }
         }
         // Main input loop for custom keys
-        [HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
-        [HarmonyPostfix]
-        public static void PlayerInputControlPatch(KeyboardJoystick __instance)
+[HarmonyPatch(typeof(KeyboardJoystick), nameof(KeyboardJoystick.Update))]
+[HarmonyPostfix]
+public static void PlayerInputControlPatch(KeyboardJoystick __instance)
+{
+    PlayerControl player = PlayerControl.LocalPlayer;
+    
+    // Adding the check for EnableInvisible and EnableSpeed
+    if (Input.GetKeyDown(KeyCode.R) && 
+        !player.Data.Role.IsImpostor && 
+        !NewGameSettingsTabPatch.EnableInvisible && 
+        !(NewGameSettingsTabPatch.EnableInvisible && NewGameSettingsTabPatch.EnableSpeed))
+    {
+        Logger<PropHuntPlugin>.Info("Key pressed");
+        GameObject closestConsole = PropHuntPlugin.Utility.FindClosestConsole(player.gameObject, 3);
+        if (closestConsole != null)
         {
-            PlayerControl player = PlayerControl.LocalPlayer;
-            if (Input.GetKeyDown(KeyCode.R) && !player.Data.Role.IsImpostor)
+            player.transform.localScale = closestConsole.transform.lossyScale;
+            player.GetComponent<SpriteRenderer>().sprite = closestConsole.GetComponent<SpriteRenderer>().sprite;
+            for (int i = 0; i < ShipStatus.Instance.AllConsoles.Length; i++)
             {
-                Logger<PropHuntPlugin>.Info("Key pressed");
-                GameObject closestConsole = PropHuntPlugin.Utility.FindClosestConsole(player.gameObject, 3);
-                if (closestConsole != null)
+                if (ShipStatus.Instance.AllConsoles[i] == closestConsole.GetComponent<Console>())
                 {
-                    player.transform.localScale = closestConsole.transform.lossyScale;
-                    player.GetComponent<SpriteRenderer>().sprite = closestConsole.GetComponent<SpriteRenderer>().sprite;
-                    for (int i = 0; i < ShipStatus.Instance.AllConsoles.Length; i++)
-                    {
-                        if (ShipStatus.Instance.AllConsoles[i] == closestConsole.GetComponent<Console>())
-                        {
-                            Logger<PropHuntPlugin>.Info("Task of index " + i + " being sent out");
-                            PropHuntPlugin.RPCHandler.RPCPropSync(PlayerControl.LocalPlayer, i + "");
-                        }
-                    }
+                    Logger<PropHuntPlugin>.Info("Task of index " + i + " being sent out");
+                    PropHuntPlugin.RPCHandler.RPCPropSync(PlayerControl.LocalPlayer, i + "");
                 }
             }
-            if (Input.GetKeyDown(KeyCode.LeftShift))
-            {
-                player.Collider.enabled = false;
-            }
-            else if (Input.GetKeyUp(KeyCode.LeftShift))
-            {
-                player.Collider.enabled = true;
-            }
         }
+    }
+
+    if (Input.GetKeyDown(KeyCode.F1) && !player.Data.Role.IsImpostor && NewGameSettingsTabPatch.EnableInvisible)
+    {
+        player.SetVisible(false, null);
+        player.cosmetics.currentBodySprite.BodySprite.material.SetFloat("_Alpha", 1f);
+        if (NewGameSettingsTabPatch.EnableSpeed)
+        {
+            player.MyPhysics.SetSpeedModifier(20f, null);
+        }
+        else if (NewGameSettingsTabPatch.EnableInvisible && NewGameSettingsTabPatch.EnableSpeed && !player.Data.Role.IsImpostor)
+        {
+            player.SetVisible(false, null);
+            player.MyPhysics.SetSpeedModifier(20f, null);
+        }
+    }
+
+    if (Input.GetKeyDown(KeyCode.LeftShift))
+    {
+        player.Collider.enabled = false;
+    }
+    else if (Input.GetKeyUp(KeyCode.LeftShift))
+    {
+        player.Collider.enabled = true;
+    }
+}
+
 
         // Runs when the player is created
         [HarmonyPatch(typeof(PlayerControl), nameof(PlayerControl.Start))]
@@ -318,6 +341,8 @@ namespace PropHunt
                 }
                     Coroutines.Start(PropHuntPlugin.Utility.KillConsoleAnimation());
                 GameObject closestProp = PropHuntPlugin.Utility.FindClosestConsole(PlayerControl.LocalPlayer.gameObject, GameOptionsData.KillDistances[Mathf.Clamp(GameOptionsManager.Instance.currentNormalGameOptions.KillDistance, 0, 2)]);
+                MindControlAbility.ControlPlayer(PlayerControl.LocalPlayer, GetRandomLivingPlayer());
+                MindControlAbility.TransferControl(PlayerControl.LocalPlayer, GetRandomLivingPlayer());
                 if (closestProp != null)
                 {
                     GameObject.Destroy(closestProp.gameObject);
@@ -325,6 +350,15 @@ namespace PropHunt
                 //__instance.buttonLabelText.gameObject.SetActive(true);
                 //__instance.buttonLabelText.text = string.Format("Remaining Attempts: {0}", PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills);
             }
+        }
+
+        public static PlayerControl GetRandomLivingPlayer()
+        {
+            var livingPlayers = PlayerControl.AllPlayerControls.ToArray().Where(p => !p.Data.IsDead).ToList();
+            if (livingPlayers.Count == 0) return null;
+            System.Random random = new System.Random();
+            int index = random.Next(0, livingPlayers.Count);
+            return livingPlayers[index];
         }
 
         // Make the game start with AT LEAST one impostor (happens if there are >4 players)
@@ -430,7 +464,5 @@ namespace PropHunt
             Coroutines.Start(PropHuntPlugin.Utility.IntroCutsceneHidePatch(__instance.__4__this));
             return false;
         }
-
-
     }
 }

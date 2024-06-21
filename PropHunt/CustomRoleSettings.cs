@@ -20,6 +20,7 @@ namespace PropHunt
         [HarmonyPostfix]
         public static void PropOptionsMenuPatch(RolesSettingsMenu __instance)
         {
+            
             // First time setup
             if (toggleOption == null && numberOption == null)
             {
@@ -31,6 +32,8 @@ namespace PropHunt
                 toggleOption.SetActive(false);
                 numberOption.SetActive(false);
             }
+            // Add Special PropHunt Settings
+            NewGameSettingsTabPatch.AddNewOptions();
             // Remove the other role settings
             __instance.RoleChancesSettings.SetActive(false);
             __instance.AdvancedRolesSettings.SetActiveRecursively(false);
@@ -76,7 +79,8 @@ namespace PropHunt
         {
             if (hidingOption && maxMissOption && infectionOption)
             {
-                PropHuntPlugin.RPCHandler.RPCSettingSync(PlayerControl.LocalPlayer, hidingOption.GetFloat(), maxMissOption.GetInt(), infectionOption.GetBool());
+                PropHuntPlugin.RPCHandler.RPCSettingSync(PlayerControl.LocalPlayer, hidingOption.GetFloat(), maxMissOption.GetInt(), infectionOption.GetBool(), NewGameSettingsTabPatch.EnableInvisible.GetBool(), NewGameSettingsTabPatch.EnableSpeed.GetBool());
+                Reactor.Utilities.Logger<PropHuntPlugin>.Instance.LogMessage("Options Sync !");
             }
         }
     }

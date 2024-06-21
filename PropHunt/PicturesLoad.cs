@@ -5,16 +5,7 @@ using System.IO;
 using System.Reflection;
 using UnityEngine;
 using System.Linq;
-using HarmonyLib;
-using Hazel;
-using System.Threading.Tasks;
-using Reactor.Utilities.Extensions;
-using AmongUs.GameOptions;
-using System.Collections;
 using Il2CppInterop.Runtime.InteropTypes.Arrays;
-using Il2CppInterop.Runtime.InteropTypes;
-using Reactor.Networking.Rpc;
-using Unity.Services.Core.Telemetry.Internal;
 
 namespace PropHunt
 {
