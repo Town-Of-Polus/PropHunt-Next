@@ -25,28 +25,9 @@ public static class PingTracker_Update
         teamLogo.transform.position = HudManager.Instance.MapButton.transform.position + Vector3.down * offset;
     }
 
-    [HarmonyPostfix]
+    /*[HarmonyPostfix]
     public static void Postfix(PingTracker __instance)
     {
-        if (PropHuntPlugin.infection == true) InfectionSetting = GetString(StringKey.True);
-        if (PropHuntPlugin.infection == false) InfectionSetting = GetString(StringKey.False);
-
-        HostSetting = string.Format(GetString(StringKey.HostSetting), PropHuntPlugin.hidingTime, PropHuntPlugin.maxMissedKills, InfectionSetting);
-
-        var position = __instance.GetComponent<AspectPosition>();
-        position.DistanceFromEdge = new Vector3(3.1f, 0.1f, 0);
-        position.AdjustPosition();
-        if (AmongUsClient.Instance.NetworkMode != NetworkModes.FreePlay && AmongUsClient.Instance.IsGameStarted && PlayerControl.LocalPlayer.Data.Role.IsImpostor)
-        {
-            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>\n\n" + string.Format(GetString(StringKey.RemainingAttempts), PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills, AmongUsClient.Instance.Ping);
-        }
-        if (!AmongUsClient.Instance.IsGameStarted)
-        {
-            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>\n" + string.Format(GetString(StringKey.PingMsText), AmongUsClient.Instance.Ping) + HostSetting;
-        }
-        if (!PlayerControl.LocalPlayer.Data.Role.IsImpostor && AmongUsClient.Instance.IsGameStarted)
-        {
-            __instance.text.text = $"<size=120%><color=#ff6600>Rrop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>\n" + string.Format(GetString(StringKey.PingMsText), AmongUsClient.Instance.Ping);
-        }
-    }
+        __instance.text.text = $"<size=120%><color=#ff6600>Prop Hunt</color> v{PropHuntPlugin.Version}\n</size>By ugackMiner53 & <color=#00ffff>fangkuai</color>\nPING:{AmongUsClient.Instance.Ping} MS\n";
+    }*/
 }

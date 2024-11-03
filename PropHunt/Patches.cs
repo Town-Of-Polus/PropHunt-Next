@@ -121,7 +121,6 @@ namespace PropHunt
                         if (ShipStatus.Instance.AllConsoles[i] == closestConsole.GetComponent<Console>())
                         {
                             Logger<PropHuntPlugin>.Info("Task of index " + i + " being sent out");
-                            PropHuntPlugin.RPCHandler.RPCPropSync(PlayerControl.LocalPlayer, i + "");
                         }
                     }
                 }
@@ -173,9 +172,9 @@ namespace PropHunt
         [HarmonyPostfix]
         public static void MakePropImpostorPatch(PlayerControl __instance)
         {
-            if (!__instance.Data.Role.IsImpostor && PropHuntPlugin.infection)
+            if (!__instance.Data.Role.IsImpostor && CustomGameOptions.infection)
             {
-                foreach (GameData.TaskInfo task in __instance.Data.Tasks)
+                foreach (NetworkedPlayerInfo.TaskInfo task in __instance.Data.Tasks)
                 {
                     task.Complete = true;
                 }
@@ -206,7 +205,7 @@ namespace PropHunt
             int impostors = 0;
             for (int i = 0; i < GameData.Instance.PlayerCount; i++)
             {
-                GameData.PlayerInfo playerInfo = GameData.Instance.AllPlayers[i];
+                NetworkedPlayerInfo playerInfo = GameData.Instance.AllPlayers[i];
                 if (!playerInfo.Disconnected)
                 {
                     if (playerInfo.Role.IsImpostor)
@@ -237,7 +236,7 @@ namespace PropHunt
                 if (GameOptionsManager.Instance.currentNormalGameOptions.GameMode == GameModes.Normal)
                 {
                     GameOverReason endReason;
-                    switch (TempData.LastDeathReason)
+                    switch (GameData.LastDeathReason)
                     {
                         case DeathReason.Exile:
                             endReason = GameOverReason.ImpostorByVote;
@@ -311,7 +310,7 @@ namespace PropHunt
                     pingText.text = string.Format("Remaining Attempts: {0}", PropHuntPlugin.maxMissedKills - PropHuntPlugin.missedKills);
                     pingText.color = Color.red;
                 }*/
-                if (PropHuntPlugin.missedKills >= PropHuntPlugin.maxMissedKills)
+                if (PropHuntPlugin.missedKills >= CustomGameOptions.maxMissedKills)
                 {
                     PlayerControl.LocalPlayer.CmdCheckMurder(PlayerControl.LocalPlayer);
                     PropHuntPlugin.missedKills = 0;
@@ -394,7 +393,7 @@ namespace PropHunt
             hud.SabotageButton.gameObject.SetActiveRecursively(false);
             hud.ReportButton.gameObject.SetActiveRecursively(false);
             hud.Chat.SetVisible(true);
-            Logger<PropHuntPlugin>.Info(PropHuntPlugin.hidingTime + " -- " + PropHuntPlugin.maxMissedKills);
+            Logger<PropHuntPlugin>.Info(CustomGameOptions.hidingTime + " -- " + CustomGameOptions.maxMissedKills);
         }
 
         // Change the role text
@@ -408,7 +407,7 @@ namespace PropHunt
                 if (PlayerControl.LocalPlayer.Data.Role.IsImpostor)
                 {
                     __instance.__4__this.RoleText.text = GetString(StringKey.Seeker);
-                    __instance.__4__this.RoleBlurbText.text = string.Format(GetString(StringKey.SeekerDescription), PropHuntPlugin.hidingTime);
+                    __instance.__4__this.RoleBlurbText.text = string.Format(GetString(StringKey.SeekerDescription), CustomGameOptions.hidingTime);
                 }
                 else
                 {
